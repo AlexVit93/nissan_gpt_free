@@ -1,7 +1,7 @@
 import logging
 from aiogram import Bot, Dispatcher, types
 import g4f
-from aiogram.utils import executor
+from aiogram.utils import executor 
 from config import API_TOKEN
 
 logging.basicConfig(level=logging.INFO)
