@@ -1,17 +1,20 @@
 import logging
 from aiogram import Bot, Dispatcher, types
+import asyncio
+import time 
 import g4f
-from aiogram.utils import executor 
+from aiogram.utils import executor
 from config import API_TOKEN
 
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
-# Словарь для хранения истории разговоров
+
 conversation_history = {}
 
-# Функция для обрезки истории разговора
+last_api_request_time = 0
+
 def trim_history(history, max_length=4096):
     current_length = sum(len(message["content"]) for message in history)
     while history and current_length > max_length:
@@ -26,13 +29,20 @@ async def process_clear_command(message: types.Message):
     conversation_history[user_id] = []
     await message.reply("История диалога очищена.")
 
-# Обработчик для каждого нового сообщения
 @dp.message_handler()
 async def send_welcome(message: types.Message):
+    global last_api_request_time  
+    
     user_id = message.from_user.id
     user_input = message.text
+    current_time = time.time() 
 
     await message.reply("Подождите пожалуйста, я обрабатываю ваш запрос...")
+
+    # Добавляем ожидание только если с последнего запроса прошло менее 10 секунд
+    if current_time - last_api_request_time < 10:
+        await asyncio.sleep(10 - (current_time - last_api_request_time))
+    last_api_request_time = time.time()
 
     if user_id not in conversation_history:
         conversation_history[user_id] = []
